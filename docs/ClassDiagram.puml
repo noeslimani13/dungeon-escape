@@ -1,0 +1,211 @@
+@startuml DungeonEscape_ClassDiagram
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 12
+
+abstract class Entity {
+    # position: Position
+    # width: int
+    # height: int
+    # active: boolean
+    + Entity(position, width, height)
+    + {abstract} update(deltaTime: double)
+    + getPosition(): Position
+    + setPosition(position: Position)
+    + isActive(): boolean
+}
+
+abstract class Enemy {
+    # damage: int
+    # speed: int
+    # aiBehavior: AIBehavior
+    + Enemy(position, damage, speed)
+    + update(deltaTime: double, player: Player)
+    + setAIBehavior(behavior: AIBehavior)
+    + getDamage(): int
+}
+
+abstract class Item {
+    + Item(position: Position)
+    + {abstract} collect(player: Player)
+}
+
+interface AIBehavior {
+    + execute(enemy: Enemy, player: Player, deltaTime: double)
+}
+
+class Player {
+    - health: int
+    - maxHealth: int
+    - speed: int
+    - keys: List<Key>
+    - hasShield: boolean
+    - shieldDuration: int
+    - previousPosition: Position
+    + Player(startPosition: Position)
+    + update(deltaTime: double)
+    + move(direction: Direction, deltaTime: double)
+    + takeDamage(damage: int)
+    + heal(amount: int)
+    + addKey(key: Key)
+    + activateShield(duration: int)
+    + hasAllKeys(required: int): boolean
+    + isInvulnerable(): boolean
+    + isDead(): boolean
+}
+
+class Ghost {
+    + Ghost(position: Position)
+}
+
+class Goblin {
+    - patrolStart: Position
+    - patrolEnd: Position
+    + Goblin(position: Position)
+}
+
+class Key {
+    + Key(position: Position)
+    + collect(player: Player)
+}
+
+class Potion {
+    - healAmount: int
+    + Potion(position: Position)
+    + collect(player: Player)
+}
+
+class Shield {
+    + Shield(position: Position)
+    + collect(player: Player)
+}
+
+class Trap {
+    - damage: int
+    - triggered: boolean
+    + Trap(position: Position)
+    + trigger(player: Player)
+}
+
+class Exit {
+    + Exit(position: Position)
+}
+
+class ChaseAI {
+    - CHASE_RANGE: double
+    + execute(enemy, player, deltaTime)
+}
+
+class PatrolAI {
+    - patrolStart: Position
+    - patrolEnd: Position
+    - movingToEnd: boolean
+    + PatrolAI(start, end)
+    + execute(enemy, player, deltaTime)
+}
+
+class Game {
+    - player: Player
+    - currentLevel: Level
+    - levelManager: LevelManager
+    - collisionDetector: CollisionDetector
+    - gameTimer: Timer
+    - gameState: GameState
+    - score: int
+    + Game()
+    + initialize()
+    + update(deltaTime: double)
+    + pause()
+    + resume()
+}
+
+class Level {
+    - width: int
+    - height: int
+    - tiles: Tile[][]
+    - enemies: List<Enemy>
+    - items: List<Item>
+    - traps: List<Trap>
+    + Level(width, height)
+    + getTile(x, y): Tile
+    + addEnemy(enemy: Enemy)
+    + addItem(item: Item)
+}
+
+class LevelManager {
+    + loadLevel(levelNumber: int): Level
+    - parseLevel(lines: List<String>): Level
+}
+
+class CollisionDetector {
+    + checkCollision(e1: Entity, e2: Entity): boolean
+    + pointInEntity(x, y, entity): boolean
+}
+
+class Position {
+    - x: int
+    - y: int
+    + Position(x, y)
+    + distanceTo(other: Position): double
+}
+
+enum Direction {
+    UP
+    DOWN
+    LEFT
+    RIGHT
+}
+
+enum GameState {
+    MENU
+    PLAYING
+    PAUSED
+    GAME_OVER
+    VICTORY
+}
+
+Entity <|-- Player
+Entity <|-- Enemy
+Entity <|-- Item
+Entity <|-- Trap
+Entity <|-- Exit
+
+Enemy <|-- Ghost
+Enemy <|-- Goblin
+
+Item <|-- Key
+Item <|-- Potion
+Item <|-- Shield
+
+AIBehavior <|.. ChaseAI
+AIBehavior <|.. PatrolAI
+
+Enemy o-- AIBehavior : uses
+
+Game *-- Player
+Game *-- Level
+Game *-- LevelManager
+Game *-- CollisionDetector
+Game o-- GameState
+
+Level *-- "many" Enemy
+Level *-- "many" Item
+Level *-- "many" Trap
+Level *-- Exit
+
+Player *-- "many" Key
+Entity *-- Position
+
+note right of Entity
+  Abstract base class implementing template design pattern
+end note
+
+note right of AIBehavior
+  Strategy Pattern: different AI behaviors can be swapped
+end note
+
+note bottom of Game
+  Main game controller managing all entities and game state
+end note
+
+@enduml

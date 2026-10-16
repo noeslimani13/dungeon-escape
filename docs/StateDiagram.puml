@@ -1,0 +1,39 @@
+@startuml DungeonEscape_StateFlow
+
+[*] --> MENU : Application Start
+
+MENU --> PLAYING : New Game
+MENU --> SETTINGS : Settings
+MENU --> [*] : Exit
+
+SETTINGS --> MENU : Back
+
+PLAYING --> PAUSED : ESC pressed
+PLAYING --> GAME_OVER : Time expired\nOR Health = 0
+PLAYING --> VICTORY : All levels\ncompleted
+PLAYING --> PLAYING : Level completed\n(Next level)
+
+PAUSED --> PLAYING : Resume
+PAUSED --> MENU : Main Menu
+
+GAME_OVER --> MENU : Main Menu
+GAME_OVER --> PLAYING : Try Again
+
+VICTORY --> MENU : Main Menu
+VICTORY --> PLAYING : Play Again
+
+note right of PLAYING
+  Core gameplay state
+  - Player movement
+  - Enemy AI
+  - Collision detection
+  - Timer countdown
+end note
+
+note right of PAUSED
+  Game frozen
+  Timer paused
+  Can resume or quit
+end note
+
+@enduml

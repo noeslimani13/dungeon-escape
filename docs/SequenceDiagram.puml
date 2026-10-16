@@ -1,0 +1,83 @@
+@startuml DungeonEscape_GameLoop
+
+title Game Loop - Update Sequence
+
+actor Player
+participant GameWindow
+participant Game
+participant KeyboardHandler
+participant MouseHandler
+participant Player as PlayerEntity
+participant Enemy
+participant CollisionDetector
+participant Level
+
+== Initialization ==
+GameWindow -> Game: initialize()
+Game -> LevelManager: loadLevel(1)
+LevelManager -> Level: new Level()
+LevelManager --> Game: currentLevel
+Game -> PlayerEntity: new Player()
+Game --> GameWindow: ready
+
+== Game Loop (each frame) ==
+loop Every Frame (60 FPS)
+    
+    Player -> GameWindow: press key (W/A/S/D)
+    GameWindow -> KeyboardHandler: keyPressed(code)
+    GameWindow -> MouseHandler: mouseClick(position)
+    
+    GameWindow -> KeyboardHandler: handleMovement(player, deltaTime)
+    KeyboardHandler -> PlayerEntity: move(direction, deltaTime)
+    PlayerEntity -> PlayerEntity: update position
+    
+    GameWindow -> Game: update(deltaTime)
+    
+    Game -> PlayerEntity: update(deltaTime)
+    
+    Game -> Game: constrainPlayerToBounds()
+    
+    Game -> Game: handleWallCollisions()
+    Game -> Level: getTile(x, y)
+    Level --> Game: tile
+    alt Collision with wall
+        Game -> PlayerEntity: revertPosition()
+    end
+    
+    loop For each enemy
+        Game -> Enemy: update(deltaTime, player)
+        Enemy -> AIBehavior: execute(enemy, player, deltaTime)
+        AIBehavior -> Enemy: setPosition(newPos)
+        
+        Game -> CollisionDetector: checkCollision(player, enemy)
+        CollisionDetector --> Game: collision result
+        
+        alt Enemy collides with player
+            Game -> PlayerEntity: takeDamage(damage)
+            alt Player is dead
+                Game -> Game: gameOver()
+            end
+        end
+    end
+    
+    loop For each item
+        Game -> CollisionDetector: checkCollision(player, item)
+        alt Player collects item
+            Game -> Item: collect(player)
+            Item -> PlayerEntity: addKey() / heal() / activateShield()
+            Game -> Game: update score
+            Game -> Level: remove item
+        end
+    end
+    
+    Game -> CollisionDetector: checkCollision(player, exit)
+    alt Player reaches exit with all keys
+        Game -> Game: levelComplete()
+        Game -> Game: load next level
+    end
+    
+    Game --> GameWindow: update complete
+    GameWindow -> GameScreen: render()
+end
+
+@enduml

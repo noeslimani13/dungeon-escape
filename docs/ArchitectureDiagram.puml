@@ -1,0 +1,160 @@
+@startuml DungeonEscape_Architecture
+
+!define RECTANGLE class
+
+package "UI Layer" {
+    [GameWindow]
+    [MenuScreen]
+    [GameScreen]
+    [HUD]
+    [SettingsScreen]
+    [LeaderboardScreen]
+    [NameInputDialog]
+    [Renderer]
+}
+
+package "Game Core" {
+    [Game]
+    [GameState]
+}
+
+package "Entity Management" {
+    [Entity]
+    [Player]
+    [Enemy]
+    [Ghost]
+    [Goblin]
+    [Item]
+    [Key]
+    [Potion]
+    [Shield]
+    [Trap]
+    [Exit]
+}
+
+package "Level Management" {
+    [Level]
+    [LevelManager]
+    [Tile]
+    [TileType]
+}
+
+package "Physics Engine" {
+    [CollisionDetector]
+    [Direction]
+    [Position]
+}
+
+package "AI System" {
+    [AIBehavior]
+    [ChaseAI]
+    [PatrolAI]
+}
+
+package "Input System" {
+    [KeyboardHandler]
+    [MouseHandler]
+    [InputHandler]
+}
+
+package "Utils" {
+    [Config]
+    [Timer]
+    [SoundManager]
+    [ScoreManager]
+}
+
+' Dependencies - UI Layer
+[GameWindow] --> [Game]
+[GameWindow] --> [MenuScreen]
+[GameWindow] --> [GameScreen]
+[GameWindow] --> [SettingsScreen]
+[GameWindow] --> [LeaderboardScreen]
+[GameWindow] --> [NameInputDialog]
+[GameWindow] --> [Renderer]
+[GameWindow] --> [KeyboardHandler]
+[GameWindow] --> [MouseHandler]
+[GameScreen] --> [Game]
+[GameScreen] --> [HUD]
+[HUD] --> [Game]
+
+' Dependencies - Game Core
+[Game] --> [Player]
+[Game] --> [Level]
+[Game] --> [LevelManager]
+[Game] --> [CollisionDetector]
+[Game] --> [Timer]
+[Game] --> [GameState]
+[Game] --> [ScoreManager]
+
+' Dependencies - Entity
+[Player] --> [Position]
+[Enemy] --> [Position]
+[Enemy] --> [AIBehavior]
+[Ghost] --> [Enemy]
+[Goblin] --> [Enemy]
+[Item] --> [Position]
+[Key] --> [Item]
+[Potion] --> [Item]
+[Shield] --> [Item]
+[Trap] --> [Entity]
+[Exit] --> [Entity]
+
+' Dependencies - Level
+[Level] --> [Enemy]
+[Level] --> [Item]
+[Level] --> [Trap]
+[Level] --> [Tile]
+[LevelManager] --> [Level]
+[LevelManager] --> [Config]
+
+' Dependencies - Physics
+[CollisionDetector] --> [Entity]
+[CollisionDetector] --> [Position]
+
+' Dependencies - AI
+[ChaseAI] ..|> [AIBehavior]
+[PatrolAI] ..|> [AIBehavior]
+[ChaseAI] --> [Player]
+[PatrolAI] --> [Player]
+
+' Dependencies - Input
+[KeyboardHandler] --> [Player]
+[KeyboardHandler] ..|> [InputHandler]
+[MouseHandler] --> [Player]
+[MouseHandler] ..|> [InputHandler]
+
+' Layer relationships
+note right of "UI Layer"
+  Presentation layer with JavaFX components
+end note
+
+note right of "Game Core"
+  Business logic and game state management
+end note
+
+note right of "Entity Management"
+  Game objects hierarchy and behavior
+end note
+
+note right of "Level Management"
+  Level loading and tilemap system
+end note
+
+note right of "Physics Engine"
+  Collision detection and position management
+end note
+
+note right of "AI System"
+  Enemy behaviors with strategy pattern
+end note
+
+note right of "Input System"
+  Keyboard and mouse input handling
+end note
+
+note right of "Utils"
+  Utility classes (configuration, timers, sound, scoring)
+end note
+
+@enduml
